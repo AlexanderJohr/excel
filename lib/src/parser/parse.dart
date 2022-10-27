@@ -142,11 +142,8 @@ class Parser {
   }
 
   _parseSharedString(XmlElement node) {
-    var list = [];
-    node.findAllElements('t').forEach((child) {
-      list.add(_parseValue(child));
-    });
-    _excel._sharedStrings.add(list.join(''));
+    final sharedString = SharedString(node: node);
+    _excel._sharedStrings.add(sharedString);
   }
 
   _parseContent({bool run = true}) {
@@ -513,7 +510,6 @@ class Parser {
         break;
       // number
       case 'n':
-      default:
         var valueNode = node.findElements('v');
         var formulaNode = node.findElements('f');
         var content = valueNode.first;
@@ -547,17 +543,18 @@ class Parser {
             value = num.parse(_parseValue(content));
           }
         }
+        break;
+      default:
+        value = _parseValue(node.findElements('v').first);
+        break;
     }
     sheetObject.updateCell(
         CellIndex.indexByColumnRow(columnIndex: colIndex, rowIndex: rowIndex),
         value,
         cellStyle: _excel._cellStyleList[s]);
-    if (value.runtimeType == String) {
-      _excel._sharedStrings.add(value);
-    }
   }
 
-  _parseValue(XmlElement node) {
+  static _parseValue(XmlElement node) {
     var buffer = StringBuffer();
 
     node.children.forEach((child) {
