@@ -93,4 +93,83 @@ void main() {
     expect(newExcel.tables['Sheet1']!.rows[4][1]!.value.toString(),
         equals('Moscow'));
   });
+
+  test('Saving XLSX File with superscript', () async {
+    var file = './test/test_resources/superscriptExample.xlsx';
+    var bytes = File(file).readAsBytesSync();
+    var excel = Excel.decodeBytes(bytes);
+
+    var fileBytes = excel.encode();
+    if (fileBytes != null) {
+      File(Directory.current.path + '/tmp/superscriptExampleOut.xlsx')
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(fileBytes);
+    }
+    var newFile = './tmp/superscriptExampleOut.xlsx';
+    var newFileBytes = File(newFile).readAsBytesSync();
+    var newExcel = Excel.decodeBytes(newFileBytes);
+    // delete tmp folder
+    new Directory('./tmp').delete(recursive: true);
+    expect(newExcel.sheets.entries.length, equals(1));
+
+    expect(newExcel.tables['Sheet1']!.rows[0][0]!.value.toString(),
+        equals('Text and superscript text'));
+    expect(newExcel.tables['Sheet1']!.rows[1][0]!.value.toString(),
+        equals('Text and superscript text'));
+    expect(newExcel.tables['Sheet1']!.rows[2][0]!.value.toString(),
+        equals('Text in A3'));
+  });
+
+  group('Header/Footer', () {
+    test("Update header/footer", () {
+      var file = './test/test_resources/example.xlsx';
+      var bytes = File(file).readAsBytesSync();
+      var excel = Excel.decodeBytes(bytes);
+      Sheet? sheetObject = excel.tables['Sheet1']!;
+
+      sheetObject.headerFooter!.oddHeader = "Foo";
+      sheetObject.headerFooter!.oddFooter = "Bar";
+
+      var fileBytes = excel.encode();
+      if (fileBytes != null) {
+        File(Directory.current.path + '/tmp/exampleOut.xlsx')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(fileBytes);
+      }
+      var newFile = './tmp/exampleOut.xlsx';
+      var newFileBytes = File(newFile).readAsBytesSync();
+      var newExcel = Excel.decodeBytes(newFileBytes);
+      expect(
+          newExcel.tables['Sheet1']!.headerFooter!.oddHeader!, equals('Foo'));
+      expect(
+          newExcel.tables['Sheet1']!.headerFooter!.oddFooter!, equals('Bar'));
+
+      // delete tmp folder only when test is successful (diagnosis)
+      new Directory('./tmp').delete(recursive: true);
+    });
+
+    test("Save empty Workbook", () {
+      var excel = Excel.createExcel();
+      excel.save();
+    });
+
+    test("Clone header/footer of existing Workbook", () {
+      var file = './test/test_resources/example.xlsx';
+      var bytes = File(file).readAsBytesSync();
+      var excel = Excel.decodeBytes(bytes);
+      Sheet? sheetObject = excel.tables['Sheet1']!;
+
+      sheetObject.headerFooter!.oddHeader = "Foo";
+      sheetObject.headerFooter!.oddFooter = "Bar";
+
+      excel.copy('Sheet1', 'test_sheet');
+
+      Sheet? testSheet = excel.tables['test_sheet'];
+
+      expect(testSheet!.headerFooter!.oddHeader!, equals('Foo'));
+      expect(testSheet.headerFooter!.oddFooter!, equals('Bar'));
+    });
+
+    test("Remove header/footer from Workbook", () {});
+  });
 }
