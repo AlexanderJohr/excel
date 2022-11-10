@@ -174,10 +174,11 @@ class Parser {
     Map spannedCells = <String, List<String>>{};
     _excel._sheets.forEach((sheetName, node) {
       _excel._availSheet(sheetName);
-      XmlElement elementNode = node as XmlElement;
+      XmlElement sheetDataNode = node as XmlElement;
       List spanList = <String>[];
 
-      elementNode.findAllElements('mergeCell').forEach((elemen) {
+      final worksheetNode = sheetDataNode.parent;
+      worksheetNode!.findAllElements('mergeCell').forEach((elemen) {
         String? ref = elemen.getAttribute('ref');
         if (ref != null && ref.contains(':') && ref.split(':').length == 2) {
           if (!_excel._sheetMap[sheetName]!._spannedItems.contains(ref)) {
@@ -202,19 +203,6 @@ class Parser {
           _excel._mergeChangeLookup = sheetName;
         }
       });
-    });
-
-    // Remove those cells which are present inside the
-    _excel._sheetMap.forEach((sheetName, sheetObject) {
-      if (spannedCells.containsKey(sheetName)) {
-        sheetObject._sheetData.forEach((row, colMap) {
-          colMap.forEach((col, dataObject) {
-            if (!(spannedCells[sheetName].contains(getCellId(col, row)))) {
-              _excel[sheetName]._sheetData[row]?.remove(col);
-            }
-          });
-        });
-      }
     });
   }
 
