@@ -510,7 +510,6 @@ class Parser {
         break;
       // number
       case 'n':
-      default:
         var valueNode = node.findElements('v');
         var formulaNode = node.findElements('f');
         var content = valueNode.first;
@@ -544,6 +543,10 @@ class Parser {
             value = num.parse(_parseValue(content));
           }
         }
+        break;
+      default:
+        value = _parseValue(node.findElements('v').first);
+        break;
     }
     sheetObject.updateCell(
         CellIndex.indexByColumnRow(columnIndex: colIndex, rowIndex: rowIndex),
