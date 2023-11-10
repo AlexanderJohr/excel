@@ -531,7 +531,8 @@ class Parser {
         }
         break;
       default:
-        value = _parseValue(node.findElements('v').first);
+        final parsedValue = _parseValue(node.findElements('v').first);
+        value = double.tryParse(parsedValue) ?? parsedValue;
         break;
     }
     sheetObject.updateCell(
